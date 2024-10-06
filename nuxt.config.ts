@@ -2,5 +2,8 @@
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   devtools: { enabled: true },
-  modules: ["@nuxtjs/tailwindcss", "@nuxt/eslint"],
+  modules: ["@nuxtjs/tailwindcss", "@nuxt/eslint", "nuxt-auth-sanctum"],
+  sanctum: {
+    baseUrl: "http://localhost:8000",
+  },
 });
