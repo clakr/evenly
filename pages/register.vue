@@ -1,37 +1,35 @@
 <script setup lang="ts">
 import * as v from "valibot";
-import type { RegisterFlatErrors, RegisterInput } from "~/utils/schema";
+import type { RegisterUserFlatErrors, RegisterUserInput } from "~/utils/schema";
 
 // REGISTER USER
 const client = useSanctumClient();
 const user = useSanctumUser();
 
-const form = reactive<RegisterInput>({
+const form = reactive<RegisterUserInput>({
   name: "",
   email: "",
   password: "",
   confirmPassword: "",
 });
 
-const errors = ref<RegisterFlatErrors>({});
+const errors = ref<RegisterUserFlatErrors>({});
 
 async function handleRegisterUser() {
   errors.value = {};
 
-  const parsedData = v.safeParse(RegisterSchema, form);
-  if (!parsedData.success) {
-    errors.value = v.flatten(parsedData.issues);
+  const { success, issues, output } = v.safeParse(
+    TransformedRegisterUserSchema,
+    form,
+  );
+  if (!success) {
+    errors.value = v.flatten(issues);
     return console.error("Validation failed");
   }
 
   await client("/register", {
     method: "post",
-    body: {
-      name: form.name,
-      email: form.email,
-      password: form.password,
-      password_confirmation: form.confirmPassword,
-    },
+    body: output,
   });
 
   user.value = await client("/api/user");

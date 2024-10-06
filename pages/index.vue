@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import * as v from "valibot";
-import type { LoginFlatErrors, LoginInput } from "~/utils/schema";
+import type { LoginUserFlatErrors, LoginUserInput } from "~/utils/schema";
 
 // LOGIN USER
 const { login } = useSanctumAuth();
 
-const form = reactive<LoginInput>({
+const form = reactive<LoginUserInput>({
   email: "",
   password: "",
 });
 
-const errors = ref<LoginFlatErrors>({});
+const errors = ref<LoginUserFlatErrors>({});
 
 async function handleLoginUser() {
   errors.value = {};
 
-  const parsedData = v.safeParse(LoginSchema, form);
-  if (!parsedData.success) {
-    errors.value = v.flatten(parsedData.issues);
+  const { success, issues, output } = v.safeParse(LoginUserSchema, form);
+  if (!success) {
+    errors.value = v.flatten(issues);
     return console.error("Validation failed");
   }
 
-  await login(form);
+  await login(output);
 }
 </script>
 
