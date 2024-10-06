@@ -6,4 +6,10 @@ export default defineNuxtConfig({
   sanctum: {
     baseUrl: "http://localhost:8000",
   },
+  tailwindcss: {
+    cssPath: "./global.css",
+  },
+  imports: {
+    autoImport: false,
+  },
 });
