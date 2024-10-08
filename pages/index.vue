@@ -33,7 +33,7 @@ async function handleLoginUser() {
 <template>
   <main class="grid min-h-screen place-content-center">
     <div
-      class="flex w-[calc(100svw-2rem)] max-w-sm flex-col gap-y-4 rounded border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200"
+      class="flex w-[calc(100svw-2rem)] max-w-md flex-col gap-y-4 rounded border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200"
     >
       <header>
         <h1 class="text-2xl font-bold">Login</h1>
@@ -41,7 +41,7 @@ async function handleLoginUser() {
           Enter your email address and password to login to your account.
         </p>
       </header>
-      <form class="flex flex-col gap-y-2" @submit.prevent="handleLoginUser">
+      <form class="flex flex-col gap-y-4" @submit.prevent="handleLoginUser">
         <div class="flex flex-col gap-y-1">
           <Label for="email">Email Address</Label>
           <Input
@@ -54,7 +54,7 @@ async function handleLoginUser() {
           />
           <FormErrors
             v-if="errors.nested?.email"
-            :errors="errors.nested?.email"
+            :errors="errors.nested.email"
           />
         </div>
         <div class="flex flex-col gap-y-1">
@@ -69,13 +69,13 @@ async function handleLoginUser() {
           />
           <FormErrors
             v-if="errors.nested?.password"
-            :errors="errors.nested?.password"
+            :errors="errors.nested.password"
           />
         </div>
         <Button class="mt-2">Sign in</Button>
       </form>
       <footer class="text-center text-sm">
-        Already have an account?
+        Don&apos;t have an account yet?
         <Button variant="link" to="/register">Sign up</Button>
       </footer>
     </div>
