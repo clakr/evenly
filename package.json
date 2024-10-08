@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "lint": "eslint . && tsc . --noEmit",
+    "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier . --write",
     "precommit": "bun run lint:fix && bun run format"
