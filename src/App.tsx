@@ -1,5 +1,6 @@
 import { useStore } from "@tanstack/react-form";
 import { AddParticipantsSection } from "./components/add-participants-section";
+import { Separator } from "./components/ui/separator";
 import { useAppForm } from "./lib/form";
 import {
 	createEmptyParticipant,
@@ -11,12 +12,7 @@ import {
 function App() {
 	const form = useAppForm({
 		defaultValues: {
-			participants: [
-				{
-					id: "123e4567-e89b-12d3-a456-426614174000",
-					name: "John Doe",
-				},
-			],
+			participants: [],
 		} as Schema,
 		validators: {
 			onChange: schema,
@@ -44,9 +40,24 @@ function App() {
 		form.removeFieldValue("participants", index);
 	}
 
+	function handleUpdateParticipant(index: number, name: Participant["name"]) {
+		const participant = participants[index];
+
+		form.replaceFieldValue("participants", index, {
+			...participant,
+			name,
+		});
+	}
+
+	function handleRemoveAllParticipants() {
+		form.setFieldValue("participants", []);
+	}
+
 	return (
-		<main className="max-w-5xl mx-auto *:outline p-6">
+		<main className="max-w-5xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.8)]">
+			<h1 className="text-5xl font-bold">Evenly</h1>
 			<form
+				className="grid gap-y-[var(--gutter-block)]"
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -57,8 +68,12 @@ function App() {
 					participants={participants}
 					addParticipant={handleAddParticipant}
 					removeParticipant={handleRemoveParticipant}
+					updateParticipant={handleUpdateParticipant}
+					removeAllParticipants={handleRemoveAllParticipants}
 				/>
+				<Separator />
 				<section>items</section>
+				<Separator />
 				<section>summary</section>
 			</form>
 		</main>
