@@ -1,5 +1,5 @@
 import { useStore } from "@tanstack/react-form";
-import { AddParticipantsSection } from "./components/add-participants-section";
+import { ParticipantsSection } from "./components/participants-section";
 import { Separator } from "./components/ui/separator";
 import { useAppForm } from "./lib/form";
 import {
@@ -21,6 +21,9 @@ function App() {
 			console.log(value);
 		},
 	});
+
+	const values = useStore(form.store, (state) => state.values);
+	const errors = useStore(form.store, (state) => state.errors);
 
 	const participants = useStore(
 		form.store,
@@ -55,6 +58,8 @@ function App() {
 
 	return (
 		<main className="max-w-5xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.8)]">
+			<pre>{JSON.stringify(values, null, 2)}</pre>
+			<pre>{JSON.stringify(errors, null, 2)}</pre>
 			<h1 className="text-5xl font-bold">Evenly</h1>
 			<form
 				className="grid gap-y-[var(--gutter-block)]"
@@ -64,7 +69,7 @@ function App() {
 					form.handleSubmit();
 				}}
 			>
-				<AddParticipantsSection
+				<ParticipantsSection
 					participants={participants}
 					addParticipant={handleAddParticipant}
 					removeParticipant={handleRemoveParticipant}
@@ -75,6 +80,7 @@ function App() {
 				<section>items</section>
 				<Separator />
 				<section>summary</section>
+				<button type="submit">qwe</button>
 			</form>
 		</main>
 	);
