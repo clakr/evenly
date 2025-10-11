@@ -1,18 +1,36 @@
 import { useStore } from "@tanstack/react-form";
-import { ParticipantsSection } from "./components/participants-section";
-import { Separator } from "./components/ui/separator";
-import { useAppForm } from "./lib/form";
+import { Banknote, LayoutList, Percent, Plus } from "lucide-react";
+import { ParticipantsSection } from "@/components/participants-section";
+import { Button } from "@/components/ui/button";
 import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
+import {
+	FieldGroup,
+	FieldLegend,
+	FieldSeparator,
+	FieldSet,
+} from "@/components/ui/field";
+import { useAppForm } from "@/lib/form";
+import {
+	createEmptyItem,
 	createEmptyParticipant,
+	itemTypeSchema,
 	type Participant,
 	type Schema,
 	schema,
-} from "./lib/schemas";
+} from "@/lib/schemas";
 
 function App() {
 	const form = useAppForm({
 		defaultValues: {
 			participants: [],
+			items: [],
 		} as Schema,
 		validators: {
 			onChange: schema,
@@ -24,6 +42,10 @@ function App() {
 
 	const values = useStore(form.store, (state) => state.values);
 	const errors = useStore(form.store, (state) => state.errors);
+
+	/**
+	 * participants
+	 */
 
 	const participants = useStore(
 		form.store,
@@ -56,6 +78,28 @@ function App() {
 		form.setFieldValue("participants", []);
 	}
 
+	function findParticipantName(participantId: Participant["id"]) {
+		return participants.find((participant) => participant.id === participantId)
+			?.name;
+	}
+
+	/**
+	 * items
+	 */
+	const items = useStore(form.store, (state) => state.values.items);
+
+	function handleAddItem() {
+		form.pushFieldValue(
+			"items",
+			createEmptyItem({
+				distributions: participants.map((participant) => ({
+					participantId: participant.id,
+					amount: 0,
+				})),
+			}),
+		);
+	}
+
 	return (
 		<main className="max-w-5xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.8)]">
 			<pre>{JSON.stringify(values, null, 2)}</pre>
@@ -76,9 +120,124 @@ function App() {
 					updateParticipant={handleUpdateParticipant}
 					removeAllParticipants={handleRemoveAllParticipants}
 				/>
-				<Separator />
-				<section>items</section>
-				<Separator />
+				<FieldSeparator />
+				<FieldSet className="grid gap-y-4" disabled={participants.length === 0}>
+					<FieldLegend>Items</FieldLegend>
+					{items.length === 0 ? (
+						<Empty className="border border-dashed">
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<LayoutList />
+								</EmptyMedia>
+								<EmptyTitle>No items yet.</EmptyTitle>
+								<EmptyDescription>Add items to get started.</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button onClick={handleAddItem}>
+									<Plus />
+									Add Item
+								</Button>
+							</EmptyContent>
+						</Empty>
+					) : (
+						<>
+							{items.map((item, index) => (
+								<FieldGroup
+									key={item.id}
+									className="border p-6 rounded-lg border-dashed"
+								>
+									<form.AppField name={`items[${index}].amount`}>
+										{(field) => (
+											<field.Input
+												label="Amount"
+												type="number"
+												placeholder="Enter amount"
+											/>
+										)}
+									</form.AppField>
+									<form.AppField name={`items[${index}].name`}>
+										{(field) => (
+											<field.Input
+												label="Name"
+												type="text"
+												placeholder="Enter item name"
+											/>
+										)}
+									</form.AppField>
+									<form.AppField name={`items[${index}].paidBy`}>
+										{(field) => (
+											<field.Select
+												label="Paid By"
+												placeholder="Select paid by"
+												options={participants.map((participant) => ({
+													label: participant.name,
+													value: participant.id,
+												}))}
+											/>
+										)}
+									</form.AppField>
+									<form.AppField name={`items[${index}].type`}>
+										{(field) => (
+											<field.Radio
+												label="Type"
+												options={itemTypeSchema.options.map((option) => ({
+													label: option,
+													value: option,
+												}))}
+											/>
+										)}
+									</form.AppField>
+									<form.Subscribe
+										selector={(state) => state.values.items[index].type}
+									>
+										{(type) =>
+											type !== "evenly" ? (
+												<FieldSet>
+													<FieldLegend className="flex items-center gap-x-2">
+														Distribution
+														<form.Subscribe
+															selector={(state) =>
+																state.values.items[index].type
+															}
+														>
+															{type === "absolute" ? (
+																<Banknote className="size-5" />
+															) : (
+																<Percent />
+															)}
+														</form.Subscribe>
+													</FieldLegend>
+													<FieldGroup className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+														{item.distributions.map((distribution, dIndex) => (
+															<form.AppField
+																name={`items[${index}].distributions[${dIndex}].amount`}
+															>
+																{(field) => (
+																	<field.Input
+																		label={findParticipantName(
+																			distribution.participantId,
+																		)}
+																		type="number"
+																		placeholder="Enter amount"
+																	/>
+																)}
+															</form.AppField>
+														))}
+													</FieldGroup>
+												</FieldSet>
+											) : null
+										}
+									</form.Subscribe>
+								</FieldGroup>
+							))}
+							<Button type="button" variant="secondary" onClick={handleAddItem}>
+								<Plus />
+								Add Item
+							</Button>
+						</>
+					)}
+				</FieldSet>
+				<FieldSeparator />
 				<section>summary</section>
 				<button type="submit">qwe</button>
 			</form>
