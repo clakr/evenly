@@ -16,6 +16,7 @@
 		"@radix-ui/react-select": "^2.2.6",
 		"@radix-ui/react-separator": "^1.1.7",
 		"@radix-ui/react-slot": "^1.2.3",
+		"@radix-ui/react-tabs": "^1.1.13",
 		"@tailwindcss/vite": "^4.1.14",
 		"@tanstack/react-form": "^1.23.6",
 		"class-variance-authority": "^0.7.1",
@@ -46,6 +47,9 @@
 	"pnpm": {
 		"overrides": {
 			"vite": "npm:rolldown-vite@7.1.14"
-		}
+		},
+		"onlyBuiltDependencies": [
+			"sharp"
+		]
 	}
 }

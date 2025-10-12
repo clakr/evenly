@@ -12,22 +12,99 @@ export type Participant = z.infer<typeof participantSchema>;
 export const itemTypeSchema = z.enum(["evenly", "absolute", "percentage"]);
 export type ItemType = z.infer<typeof itemTypeSchema>;
 
+export const distributionSchema = z.object({
+	participantId: participantSchema.shape.id,
+	amount: z.number().min(0, "Amount must be equal to or greater than 0"),
+});
+
 export const itemSchema = z.object({
 	id: z.uuid(),
 	name: z.string().min(1, "Name is required"),
 	amount: z.number().min(1, "Amount is required"),
 	paidBy: participantSchema.shape.id,
 	type: itemTypeSchema,
-	distributions: z.array(
-		z.object({
-			participantId: participantSchema.shape.id,
-			amount: z.number().min(1, "Amount is required"),
-		}),
-	),
+	distributions: z.array(distributionSchema),
 });
 
 export type Item = z.infer<typeof itemSchema>;
 export type ItemInput = z.input<typeof itemSchema>;
+
+export const itemsBreakdownSchema = z.object({
+	id: itemSchema.shape.id,
+	name: itemSchema.shape.name,
+	amount: itemSchema.shape.amount,
+	paidBy: participantSchema.shape.id,
+	type: itemSchema.shape.type,
+	distributions: z.array(
+		z.object({
+			participantId: distributionSchema.shape.participantId,
+			percentage: z.number(),
+			amount: distributionSchema.shape.amount,
+		}),
+	),
+});
+
+export const itemSummaryCodec = z.codec(
+	z.array(itemSchema),
+	z.array(itemsBreakdownSchema),
+	{
+		decode: (itemSchema) =>
+			itemSchema.map((item) => {
+				const distributions = item.distributions.map((distribution) => {
+					if (item.type === "evenly") {
+						return {
+							participantId: distribution.participantId,
+							percentage: 100 / item.distributions.length,
+							amount: item.amount / item.distributions.length,
+						};
+					}
+
+					if (item.type === "percentage") {
+						return {
+							participantId: distribution.participantId,
+							percentage: distribution.amount,
+							amount: (item.amount * distribution.amount) / 100,
+						};
+					}
+
+					return {
+						participantId: distribution.participantId,
+						percentage: 0,
+						amount: distribution.amount,
+					};
+				});
+
+				return {
+					...item,
+					distributions,
+				};
+			}),
+		encode: (itemsBreakdownSchema) =>
+			itemsBreakdownSchema.map((item) => {
+				const distributions = item.distributions.map((distribution) => {
+					let amount = 0;
+
+					if (item.type === "percentage") {
+						amount = distribution.percentage;
+					}
+
+					if (item.type === "absolute") {
+						amount = distribution.amount;
+					}
+
+					return {
+						participantId: distribution.participantId,
+						amount,
+					};
+				});
+
+				return {
+					...item,
+					distributions,
+				};
+			}),
+	},
+);
 
 export const schema = z.object({
 	participants: z.array(participantSchema).refine(
