@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/item";
 import { Separator } from "@/components/ui/separator";
 import {
+	type ItemsBreakdownDistribution,
 	type Item as ItemType,
 	itemSummaryCodec,
 	type Participant,
@@ -36,6 +37,32 @@ export function SummarySection({ participants, items }: Props) {
 	}
 
 	const itemsBreakdown = itemSummaryCodec.decode(items);
+
+	function buildDistributionAmount({
+		item,
+		distribution,
+	}: {
+		item: ItemType;
+		distribution: ItemsBreakdownDistribution;
+	}) {
+		const amount: string[] = [];
+
+		if (item.type === "percentage" || item.type === "evenly") {
+			amount.push(
+				formatPercentage(distribution.percentage / 100, {
+					maximumFractionDigits: 2,
+				}),
+			);
+			amount.push("=");
+			amount.push(formatCurrency(distribution.amount));
+		}
+
+		if (item.type === "absolute") {
+			amount.push(formatCurrency(distribution.amount));
+		}
+
+		return amount.join(" ");
+	}
 
 	const totalParticipants = itemsBreakdown.reduce<Array<Participant["id"]>>(
 		(acc, item) => {
@@ -138,7 +165,7 @@ export function SummarySection({ participants, items }: Props) {
 	const settlements = calculateSettlements();
 
 	return (
-		<section className="grid gap-y-6 font-mono">
+		<>
 			<section className="flex flex-wrap gap-2">
 				<h2 className="font-medium text-sm basis-full uppercase">
 					Participants
@@ -178,9 +205,7 @@ export function SummarySection({ participants, items }: Props) {
 													{findParticipantName(distribution.participantId)}
 												</span>
 												<span>
-													{`${formatPercentage(distribution.percentage / 100, {
-														maximumFractionDigits: 2,
-													})} = ${formatCurrency(distribution.amount)}`}
+													{buildDistributionAmount({ item, distribution })}
 												</span>
 											</li>
 										))}
@@ -243,7 +268,7 @@ export function SummarySection({ participants, items }: Props) {
 							<ItemHeader className="items-center">
 								<span className="flex items-center gap-x-2">
 									{settlement.from}
-									<ArrowRight />
+									<ArrowRight className="size-3" />
 									{settlement.to}
 								</span>
 								<span className="text-base font-bold">
@@ -254,6 +279,6 @@ export function SummarySection({ participants, items }: Props) {
 					))}
 				</ItemGroup>
 			</section>
-		</section>
+		</>
 	);
 }

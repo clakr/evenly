@@ -261,7 +261,7 @@ function App() {
 							)}
 						</FieldSet>
 					</TabsContent>
-					<TabsContent value="summary">
+					<TabsContent value="summary" className="grid gap-y-6 font-mono">
 						<SummarySection participants={participants} items={items} />
 					</TabsContent>
 				</Tabs>

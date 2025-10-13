@@ -17,6 +17,8 @@ export const distributionSchema = z.object({
 	amount: z.number().min(0, "Amount must be equal to or greater than 0"),
 });
 
+export type Distribution = z.infer<typeof distributionSchema>;
+
 export const itemSchema = z.object({
 	id: z.uuid(),
 	name: z.string().min(1, "Name is required"),
@@ -29,19 +31,23 @@ export const itemSchema = z.object({
 export type Item = z.infer<typeof itemSchema>;
 export type ItemInput = z.input<typeof itemSchema>;
 
+export const itemsBreakdownDistributionSchema = z.object({
+	participantId: distributionSchema.shape.participantId,
+	percentage: z.number(),
+	amount: distributionSchema.shape.amount,
+});
+
+export type ItemsBreakdownDistribution = z.infer<
+	typeof itemsBreakdownDistributionSchema
+>;
+
 export const itemsBreakdownSchema = z.object({
 	id: itemSchema.shape.id,
 	name: itemSchema.shape.name,
 	amount: itemSchema.shape.amount,
 	paidBy: participantSchema.shape.id,
 	type: itemSchema.shape.type,
-	distributions: z.array(
-		z.object({
-			participantId: distributionSchema.shape.participantId,
-			percentage: z.number(),
-			amount: distributionSchema.shape.amount,
-		}),
-	),
+	distributions: z.array(itemsBreakdownDistributionSchema),
 });
 
 export const itemSummaryCodec = z.codec(
