@@ -9,7 +9,12 @@ type Props = {
 	orientation?: ComponentProps<typeof Field>["orientation"];
 } & ComponentProps<"input">;
 
-export function Input({ label, type, orientation = "vertical" }: Props) {
+export function Input({
+	label,
+	type,
+	orientation = "vertical",
+	...props
+}: Props) {
 	const field = useFieldContext<string | number>();
 
 	const id = useId();
@@ -42,6 +47,7 @@ export function Input({ label, type, orientation = "vertical" }: Props) {
 				onBlur={field.handleBlur}
 				aria-invalid={hasError}
 				aria-describedby={hasError ? errorId : undefined}
+				{...props}
 			/>
 			{hasError ? <FieldError errors={errors} /> : null}
 		</Field>

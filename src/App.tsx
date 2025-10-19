@@ -1,7 +1,14 @@
 import { useStore } from "@tanstack/react-form";
-import { Banknote, LayoutList, Percent, Plus } from "lucide-react";
+import {
+	AlertCircleIcon,
+	Banknote,
+	LayoutList,
+	Percent,
+	Plus,
+} from "lucide-react";
 import { ParticipantsSection } from "@/components/participants-section";
 import { SummarySection } from "@/components/summary-section";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
 	Empty,
@@ -12,6 +19,7 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import {
+	FieldError,
 	FieldGroup,
 	FieldLegend,
 	FieldSeparator,
@@ -102,6 +110,16 @@ function App() {
 		);
 	}
 
+	function handleItemTypeChange(index: number) {
+		form.setFieldValue(
+			`items[${index}].distributions`,
+			items[index].distributions.map((distribution) => ({
+				...distribution,
+				amount: 0,
+			})),
+		);
+	}
+
 	return (
 		<main className="max-w-3xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.8)]">
 			{/* <pre>{JSON.stringify(values, null, 2)}</pre>
@@ -158,97 +176,126 @@ function App() {
 								</Empty>
 							) : (
 								<>
-									{items.map((item, index) => (
-										<FieldGroup
-											key={item.id}
-											className="border p-6 rounded-lg border-dashed"
-										>
-											<form.AppField name={`items[${index}].amount`}>
-												{(field) => (
-													<field.Input
-														label="Amount"
-														type="number"
-														placeholder="Enter amount"
-													/>
-												)}
-											</form.AppField>
-											<form.AppField name={`items[${index}].name`}>
-												{(field) => (
-													<field.Input
-														label="Name"
-														type="text"
-														placeholder="Enter item name"
-													/>
-												)}
-											</form.AppField>
-											<form.AppField name={`items[${index}].paidBy`}>
-												{(field) => (
-													<field.Select
-														label="Paid By"
-														placeholder="Select paid by"
-														options={participants.map((participant) => ({
-															label: participant.name,
-															value: participant.id,
-														}))}
-													/>
-												)}
-											</form.AppField>
-											<form.AppField name={`items[${index}].type`}>
-												{(field) => (
-													<field.Radio
-														label="Type"
-														options={itemTypeSchema.options.map((option) => ({
-															label: option,
-															value: option,
-														}))}
-													/>
-												)}
-											</form.AppField>
-											<form.Subscribe
-												selector={(state) => state.values.items[index].type}
-											>
-												{(type) =>
-													type !== "evenly" ? (
-														<FieldSet>
-															<FieldLegend className="flex items-center gap-x-2">
-																Distribution
-																<form.Subscribe
-																	selector={(state) =>
-																		state.values.items[index].type
-																	}
-																>
-																	{type === "absolute" ? (
-																		<Banknote className="size-5" />
-																	) : (
-																		<Percent />
+									<form.AppField name="items" mode="array">
+										{(field) =>
+											field.state.value.map((item, iIndex) => {
+												const fieldErrors = errors.at(0)?.[`items[${iIndex}]`];
+
+												return (
+													<FieldGroup
+														key={item.id}
+														className="border p-6 rounded-lg border-dashed grid sm:grid-cols-3 [&>div:has(div[role=radiogroup])]:col-span-full [&>fieldset]:col-span-full gap-x-4"
+													>
+														<form.AppField name={`items[${iIndex}].amount`}>
+															{(field) => (
+																<field.Input
+																	label="Amount"
+																	type="number"
+																	placeholder="Enter amount"
+																/>
+															)}
+														</form.AppField>
+														<form.AppField name={`items[${iIndex}].name`}>
+															{(field) => (
+																<field.Input
+																	label="Name"
+																	type="text"
+																	placeholder="Enter item name"
+																/>
+															)}
+														</form.AppField>
+														<form.AppField name={`items[${iIndex}].paidBy`}>
+															{(field) => (
+																<field.Select
+																	label="Paid By"
+																	placeholder="Select paid by"
+																	options={participants.map((participant) => ({
+																		label: participant.name,
+																		value: participant.id,
+																	}))}
+																/>
+															)}
+														</form.AppField>
+														<form.AppField
+															name={`items[${iIndex}].type`}
+															listeners={{
+																onChange: () => handleItemTypeChange(iIndex),
+															}}
+														>
+															{(field) => (
+																<field.Radio
+																	label="Type"
+																	options={itemTypeSchema.options.map(
+																		(option) => ({
+																			label: option,
+																			value: option,
+																		}),
 																	)}
-																</form.Subscribe>
-															</FieldLegend>
-															<FieldGroup className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-																{item.distributions.map(
-																	(distribution, dIndex) => (
-																		<form.AppField
-																			name={`items[${index}].distributions[${dIndex}].amount`}
-																		>
-																			{(field) => (
-																				<field.Input
-																					label={findParticipantName(
-																						distribution.participantId,
-																					)}
-																					type="number"
-																					placeholder="Enter amount"
-																				/>
+																/>
+															)}
+														</form.AppField>
+														<form.Subscribe
+															selector={(state) =>
+																state.values.items[iIndex].type
+															}
+														>
+															{(type) =>
+																type !== "evenly" ? (
+																	<FieldSet>
+																		<FieldLegend className="flex items-center gap-x-2">
+																			Distribution
+																			<form.Subscribe
+																				selector={(state) =>
+																					state.values.items[iIndex].type
+																				}
+																			>
+																				{type === "absolute" ? (
+																					<Banknote className="size-5" />
+																				) : (
+																					<Percent />
+																				)}
+																			</form.Subscribe>
+																		</FieldLegend>
+																		<FieldGroup className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-x-4">
+																			{item.distributions.map(
+																				(distribution, dIndex) => (
+																					<form.AppField
+																						name={`items[${iIndex}].distributions[${dIndex}].amount`}
+																					>
+																						{(field) => (
+																							<field.Input
+																								label={findParticipantName(
+																									distribution.participantId,
+																								)}
+																								type="number"
+																								placeholder="Enter amount"
+																							/>
+																						)}
+																					</form.AppField>
+																				),
 																			)}
-																		</form.AppField>
-																	),
-																)}
-															</FieldGroup>
-														</FieldSet>
-													) : null
-												}
-											</form.Subscribe>
-										</FieldGroup>
-									))}
+																		</FieldGroup>
+																	</FieldSet>
+																) : null
+															}
+														</form.Subscribe>
+														{fieldErrors ? (
+															<Alert
+																variant="destructive"
+																className="col-span-full"
+															>
+																<AlertCircleIcon />
+																<AlertTitle>Error!</AlertTitle>
+																<AlertDescription>
+																	<FieldError errors={fieldErrors} />
+																</AlertDescription>
+															</Alert>
+														) : null}
+													</FieldGroup>
+												);
+											})
+										}
+									</form.AppField>
 									<Button
 										type="button"
 										variant="secondary"

@@ -10,7 +10,7 @@ type Props = {
 	options: Option[];
 } & ComponentProps<typeof RadioGroup>;
 
-export function Radio({ label, options }: Props) {
+export function Radio({ label, options, ...props }: Props) {
 	const field = useFieldContext<string>();
 
 	const id = useId();
@@ -30,6 +30,7 @@ export function Radio({ label, options }: Props) {
 				onValueChange={field.handleChange}
 				aria-invalid={hasError}
 				aria-describedby={hasError ? errorId : undefined}
+				{...props}
 			>
 				{options.map((option) => (
 					<div className="flex items-center space-x-2">

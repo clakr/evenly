@@ -19,14 +19,51 @@ export const distributionSchema = z.object({
 
 export type Distribution = z.infer<typeof distributionSchema>;
 
-export const itemSchema = z.object({
-	id: z.uuid(),
-	name: z.string().min(1, "Name is required"),
-	amount: z.number().min(1, "Amount is required"),
-	paidBy: participantSchema.shape.id,
-	type: itemTypeSchema,
-	distributions: z.array(distributionSchema),
-});
+export const itemSchema = z
+	.object({
+		id: z.uuid(),
+		name: z.string().min(1, "Name is required"),
+		amount: z.number().min(1, "Amount is required"),
+		paidBy: participantSchema.shape.id,
+		type: itemTypeSchema,
+		distributions: z.array(distributionSchema),
+	})
+	.refine(
+		(item) =>
+			item.type === "evenly"
+				? item.distributions.every((distribution) => distribution.amount === 0)
+				: true,
+		{
+			error:
+				"Distribution amounts must be 0 when distribution type is `evenly`",
+		},
+	)
+	.refine(
+		(item) =>
+			item.type === "percentage"
+				? item.distributions.reduce(
+						(acc, distribution) => acc + distribution.amount,
+						0,
+					) === 100
+				: true,
+		{
+			error:
+				"Distribution percentages must sum to 100 when distribution type is `percentage`",
+		},
+	)
+	.refine(
+		(item) =>
+			item.type === "absolute"
+				? item.distributions.reduce(
+						(acc, distribution) => acc + distribution.amount,
+						0,
+					) === item.amount
+				: true,
+		{
+			error:
+				"Distribution amounts must sum to the item amount when distribution type is `absolute`",
+		},
+	);
 
 export type Item = z.infer<typeof itemSchema>;
 export type ItemInput = z.input<typeof itemSchema>;

@@ -17,7 +17,7 @@ type Props = {
 	options: Option[];
 } & ComponentProps<"select">;
 
-export function Select({ label, placeholder, options }: Props) {
+export function Select({ label, placeholder, options, ...props }: Props) {
 	const field = useFieldContext<string>();
 
 	const id = useId();
