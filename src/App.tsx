@@ -51,7 +51,7 @@ function App() {
 		},
 	});
 
-	const values = useStore(form.store, (state) => state.values);
+	// const values = useStore(form.store, (state) => state.values);
 	const errors = useStore(form.store, (state) => state.errors);
 
 	/**
