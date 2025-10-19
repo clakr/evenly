@@ -1,5 +1,9 @@
 import * as z from "zod";
 
+//////////////////
+// PARTICIPANTS //
+//////////////////
+
 export const participantNameSchema = z.string().min(1, "Name is required");
 export type ParticipantName = z.infer<typeof participantNameSchema>;
 
@@ -9,8 +13,9 @@ export const participantSchema = z.object({
 });
 export type Participant = z.infer<typeof participantSchema>;
 
-export const itemTypeSchema = z.enum(["evenly", "absolute", "percentage"]);
-export type ItemType = z.infer<typeof itemTypeSchema>;
+///////////////////
+// DISTRIBUTIONS //
+///////////////////
 
 export const distributionSchema = z.object({
 	participantId: participantSchema.shape.id,
@@ -18,6 +23,13 @@ export const distributionSchema = z.object({
 });
 
 export type Distribution = z.infer<typeof distributionSchema>;
+
+///////////
+// ITEMS //
+///////////
+
+export const itemTypeSchema = z.enum(["evenly", "absolute", "percentage"]);
+export type ItemType = z.infer<typeof itemTypeSchema>;
 
 export const itemSchema = z
 	.object({
@@ -66,7 +78,6 @@ export const itemSchema = z
 	);
 
 export type Item = z.infer<typeof itemSchema>;
-export type ItemInput = z.input<typeof itemSchema>;
 
 export const itemsBreakdownDistributionSchema = z.object({
 	participantId: distributionSchema.shape.participantId,
@@ -78,11 +89,11 @@ export type ItemsBreakdownDistribution = z.infer<
 	typeof itemsBreakdownDistributionSchema
 >;
 
-export const itemsBreakdownSchema = z.object({
+const itemsBreakdownSchema = z.object({
 	id: itemSchema.shape.id,
 	name: itemSchema.shape.name,
 	amount: itemSchema.shape.amount,
-	paidBy: participantSchema.shape.id,
+	paidBy: itemSchema.shape.paidBy,
 	type: itemSchema.shape.type,
 	distributions: z.array(itemsBreakdownDistributionSchema),
 });
@@ -94,21 +105,19 @@ export const itemSummaryCodec = z.codec(
 		decode: (itemSchema) =>
 			itemSchema.map((item) => {
 				const distributions = item.distributions.map((distribution) => {
-					if (item.type === "evenly") {
+					if (item.type === "evenly")
 						return {
 							participantId: distribution.participantId,
 							percentage: 100 / item.distributions.length,
 							amount: item.amount / item.distributions.length,
 						};
-					}
 
-					if (item.type === "percentage") {
+					if (item.type === "percentage")
 						return {
 							participantId: distribution.participantId,
 							percentage: distribution.amount,
 							amount: (item.amount * distribution.amount) / 100,
 						};
-					}
 
 					return {
 						participantId: distribution.participantId,
@@ -163,6 +172,10 @@ export const schema = z.object({
 });
 export type Schema = z.infer<typeof schema>;
 
+/////////////
+// HELPERS //
+/////////////
+
 export function createEmptyParticipant(
 	payload: Partial<Participant>,
 ): Participant {
@@ -173,7 +186,7 @@ export function createEmptyParticipant(
 	};
 }
 
-export function createEmptyItem(payload: Partial<ItemInput> = {}): ItemInput {
+export function createEmptyItem(payload: Partial<Item> = {}): Item {
 	return {
 		id: crypto.randomUUID(),
 		name: "",

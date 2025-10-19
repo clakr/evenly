@@ -11,12 +11,11 @@ import {
 } from "@/components/ui/item";
 import { Separator } from "@/components/ui/separator";
 import {
-	type ItemsBreakdownDistribution,
 	type Item as ItemType,
 	itemSummaryCodec,
 	type Participant,
 } from "@/lib/schemas";
-import { cn, formatCurrency, formatPercentage } from "@/lib/utils";
+import { buildDistributionAmount, cn, formatCurrency } from "@/lib/utils";
 
 type Props = {
 	participants: Participant[];
@@ -37,32 +36,6 @@ export function SummarySection({ participants, items }: Props) {
 	}
 
 	const itemsBreakdown = itemSummaryCodec.decode(items);
-
-	function buildDistributionAmount({
-		item,
-		distribution,
-	}: {
-		item: ItemType;
-		distribution: ItemsBreakdownDistribution;
-	}) {
-		const amount: string[] = [];
-
-		if (item.type === "percentage" || item.type === "evenly") {
-			amount.push(
-				formatPercentage(distribution.percentage / 100, {
-					maximumFractionDigits: 2,
-				}),
-			);
-			amount.push("=");
-			amount.push(formatCurrency(distribution.amount));
-		}
-
-		if (item.type === "absolute") {
-			amount.push(formatCurrency(distribution.amount));
-		}
-
-		return amount.join(" ");
-	}
 
 	const totalParticipants = itemsBreakdown.reduce<Array<Participant["id"]>>(
 		(acc, item) => {

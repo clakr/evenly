@@ -76,7 +76,7 @@ export function ParticipantsSection({
 	}
 
 	return (
-		<section className="grid gap-y-4">
+		<section className="grid gap-y-[calc(var(--gutter-block)/2)]">
 			<h2 className="font-medium">Participants</h2>
 			<div className="grid gap-y-4">
 				{isEmpty ? (

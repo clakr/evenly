@@ -1,4 +1,5 @@
 import { useStore } from "@tanstack/react-form";
+import { ItemsBreakdownSection } from "@/components/items-breakdown-section";
 import { ItemsSection } from "@/components/items-section";
 import { ParticipantsSection } from "@/components/participants-section";
 import { SummarySection } from "@/components/summary-section";
@@ -8,7 +9,7 @@ import { useAppForm } from "@/lib/form";
 import {
 	createEmptyItem,
 	createEmptyParticipant,
-	type ItemInput,
+	type Item,
 	type Participant,
 	type Schema,
 	schema,
@@ -63,17 +64,22 @@ function App() {
 		form.setFieldValue("participants", []);
 	}
 
+	function handleFindParticipantName(participantId: Participant["id"]) {
+		return participants.find((participant) => participant.id === participantId)
+			?.name;
+	}
+
 	/**
 	 * items
 	 */
 	const items = useStore(form.store, (state) => state.values.items);
 
-	function handleAddItem(payload: Partial<ItemInput> = {}) {
+	function handleAddItem(payload: Partial<Item>) {
 		form.pushFieldValue("items", createEmptyItem(payload));
 	}
 
 	return (
-		<main className="max-w-3xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.8)]">
+		<main className="max-w-3xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.6)]">
 			<h1 className="text-5xl font-bold">evenly</h1>
 			<form
 				onSubmit={(e) => {
@@ -82,7 +88,7 @@ function App() {
 					form.handleSubmit();
 				}}
 			>
-				<Tabs defaultValue="details" className="gap-y-4">
+				<Tabs defaultValue="details" className="gap-y-[var(--gutter-block)]">
 					<TabsList>
 						<TabsTrigger value="details">Details</TabsTrigger>
 						<TabsTrigger value="summary" disabled={items.length === 0}>
@@ -100,17 +106,18 @@ function App() {
 							updateParticipant={handleUpdateParticipant}
 							removeAllParticipants={handleRemoveAllParticipants}
 						/>
-						{participants.length > 0 ? (
-							<>
-								<FieldSeparator />
-								<ItemsSection
-									participants={participants}
-									addItem={handleAddItem}
-								/>
-							</>
-						) : null}
+						<FieldSeparator />
+						<ItemsSection participants={participants} addItem={handleAddItem} />
+						<FieldSeparator />
+						<ItemsBreakdownSection
+							items={items}
+							findParticipantName={handleFindParticipantName}
+						/>
 					</TabsContent>
-					<TabsContent value="summary" className="grid gap-y-6 font-mono">
+					<TabsContent
+						value="summary"
+						className="grid gap-y-[var(--gutter-block)] font-mono"
+					>
 						<SummarySection participants={participants} items={items} />
 					</TabsContent>
 				</Tabs>
