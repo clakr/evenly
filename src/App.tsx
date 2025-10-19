@@ -5,6 +5,7 @@ import {
 	LayoutList,
 	Percent,
 	Plus,
+	Trash,
 } from "lucide-react";
 import { ParticipantsSection } from "@/components/participants-section";
 import { SummarySection } from "@/components/summary-section";
@@ -120,11 +121,15 @@ function App() {
 		);
 	}
 
+	function handleRemoveItem(index: number) {
+		form.removeFieldValue("items", index);
+	}
+
 	return (
 		<main className="max-w-3xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.8)]">
 			{/* <pre>{JSON.stringify(values, null, 2)}</pre>
 			<pre>{JSON.stringify(errors, null, 2)}</pre> */}
-			<h1 className="text-5xl font-bold">Evenly</h1>
+			<h1 className="text-5xl font-bold">evenly</h1>
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();
@@ -184,8 +189,17 @@ function App() {
 												return (
 													<FieldGroup
 														key={item.id}
-														className="border p-6 rounded-lg border-dashed grid sm:grid-cols-3 [&>div:has(div[role=radiogroup])]:col-span-full [&>fieldset]:col-span-full gap-x-4"
+														className="border p-6 rounded-lg border-dashed grid sm:grid-cols-3 [&>div:has(div[role=radiogroup])]:col-span-full [&>fieldset]:col-span-full gap-x-4 relative"
 													>
+														<Button
+															type="button"
+															size="icon-sm"
+															variant="ghost"
+															className="absolute top-1.5 right-1.5"
+															onClick={() => handleRemoveItem(iIndex)}
+														>
+															<Trash />
+														</Button>
 														<form.AppField name={`items[${iIndex}].amount`}>
 															{(field) => (
 																<field.Input
