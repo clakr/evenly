@@ -2,7 +2,7 @@ import { useStore } from "@tanstack/react-form";
 import { ItemsBreakdownSection } from "@/components/items-breakdown-section";
 import { ItemsSection } from "@/components/items-section";
 import { ParticipantsSection } from "@/components/participants-section";
-import { SummarySection } from "@/components/summary-section";
+import { SummaryTabContent } from "@/components/summary-tab-content";
 import { FieldSeparator } from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppForm } from "@/lib/form";
@@ -108,18 +108,20 @@ function App() {
 						/>
 						<FieldSeparator />
 						<ItemsSection participants={participants} addItem={handleAddItem} />
-						<FieldSeparator />
-						<ItemsBreakdownSection
-							items={items}
-							findParticipantName={handleFindParticipantName}
-						/>
+						{items.length > 0 ? (
+							<>
+								<FieldSeparator />
+								<ItemsBreakdownSection
+									items={items}
+									findParticipantName={handleFindParticipantName}
+								/>
+							</>
+						) : null}
 					</TabsContent>
-					<TabsContent
-						value="summary"
-						className="grid gap-y-[var(--gutter-block)] font-mono"
-					>
-						<SummarySection participants={participants} items={items} />
-					</TabsContent>
+					<SummaryTabContent
+						items={items}
+						findParticipantName={handleFindParticipantName}
+					/>
 				</Tabs>
 			</form>
 		</main>

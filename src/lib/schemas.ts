@@ -28,7 +28,7 @@ export type Distribution = z.infer<typeof distributionSchema>;
 // ITEMS //
 ///////////
 
-export const itemTypeSchema = z.enum(["evenly", "absolute", "percentage"]);
+export const itemTypeSchema = z.enum(["evenly", "percentage", "absolute"]);
 export type ItemType = z.infer<typeof itemTypeSchema>;
 
 export const itemSchema = z
