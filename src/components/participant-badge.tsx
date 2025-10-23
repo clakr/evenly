@@ -1,10 +1,10 @@
-import { AlertCircle, Edit, Ellipsis, Trash } from "lucide-react";
-import { useId, useState } from "react";
+import { Edit, Ellipsis, Trash } from "lucide-react";
+import { useState } from "react";
 import * as z from "zod";
-import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { Field, FieldError, FieldGroup, FieldSet } from "@/components/ui/field";
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -20,23 +20,23 @@ import { type Participant, participantNameSchema } from "@/lib/schemas";
 
 type Props = {
 	participant: Participant;
-	removeParticipant: () => void;
-	updateParticipant: (name: Participant["name"]) => void;
+	editParticipant: (name: Participant["name"]) => void;
 	isNameUnique: (name: Participant["name"]) => boolean;
+	removeParticipant: () => void;
 };
 
 export function ParticipantBadge({
 	participant,
-	removeParticipant,
-	updateParticipant,
+	editParticipant,
 	isNameUnique,
+	removeParticipant,
 }: Props) {
+	const [isOpen, setIsOpen] = useState(false);
+
 	const [name, setName] = useState(participant.name);
-
 	const [error, setError] = useState<string | null>(null);
-	const errorId = useId();
 
-	function handleUpdateParticipant() {
+	function handleEdit() {
 		setError(null);
 
 		const {
@@ -55,57 +55,73 @@ export function ParticipantBadge({
 			return;
 		}
 
-		updateParticipant(parsedName);
+		editParticipant(parsedName);
+
+		setIsOpen(false);
+	}
+
+	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+		if (e.key !== "Enter") return;
+
+		e.preventDefault();
+		handleEdit();
 	}
 
 	return (
-		<Badge className="text-sm gap-x-2 h-8 rounded-md gap-1.5">
+		<Badge className="text-sm gap-x-2">
 			{participant.name}
-			<Popover>
-				<PopoverTrigger className="cursor-pointer hover:opacity-75 transition-opacity">
+			<Popover open={isOpen} onOpenChange={setIsOpen}>
+				<PopoverTrigger
+					aria-label="Participant Actions"
+					title="Participant Actions"
+				>
 					<Ellipsis />
-					<span className="sr-only">participant actions</span>
 				</PopoverTrigger>
-				<PopoverContent className="p-[var(--padding)] [--padding:theme(spacing.2)] flex flex-col gap-y-2 pb-3">
-					<ButtonGroup className="w-full [&>*:not(:first-child)]:rounded-l-[calc(var(--radius)-var(--padding))] [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-[calc(var(--radius)-var(--padding))] ">
-						<InputGroup>
-							<InputGroupInput
-								type="text"
-								placeholder="Enter participant name"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter") {
-										e.preventDefault();
-										handleUpdateParticipant();
-									}
-								}}
-								aria-invalid={error ? true : false}
-								aria-describedby={error ? errorId : undefined}
-							/>
-							<InputGroupAddon align="inline-end">
-								<InputGroupButton
-									type="button"
-									size="icon-xs"
-									onClick={handleUpdateParticipant}
-								>
-									<Edit />
-									<span className="sr-only">edit participant</span>
-								</InputGroupButton>
-							</InputGroupAddon>
-						</InputGroup>
-
-						<Button variant="outline" onClick={removeParticipant}>
-							<Trash />
-							<span className="sr-only">remove participant</span>
-						</Button>
-					</ButtonGroup>
-					{error ? (
-						<Alert id={errorId} variant="destructive">
-							<AlertCircle />
-							<AlertTitle>{error}</AlertTitle>
-						</Alert>
-					) : null}
+				<PopoverContent>
+					<FieldSet>
+						<FieldGroup>
+							<Field data-invalid={error ? true : false}>
+								<ButtonGroup>
+									<InputGroup>
+										<InputGroupInput
+											type="text"
+											placeholder="Enter Participant Name"
+											onKeyDown={handleKeyDown}
+											value={name}
+											onChange={(e) => setName(e.target.value)}
+											aria-invalid={error ? true : false}
+											aria-describedby={
+												error ? "edit-participant-name-error" : undefined
+											}
+										/>
+										<InputGroupAddon align="inline-end">
+											<InputGroupButton
+												aria-label="Edit Participant"
+												title="Edit Participant"
+												size="icon-xs"
+												onClick={handleEdit}
+											>
+												<Edit />
+											</InputGroupButton>
+										</InputGroupAddon>
+									</InputGroup>
+									<Button
+										type="button"
+										variant="outline"
+										size="icon"
+										aria-label="Delete Participant"
+										title="Delete Participant"
+										onClick={removeParticipant}
+									>
+										<Trash />
+									</Button>
+								</ButtonGroup>
+								<FieldError id="edit-participant-name-error">
+									{error}
+								</FieldError>
+							</Field>
+						</FieldGroup>
+					</FieldSet>
 				</PopoverContent>
 			</Popover>
 		</Badge>

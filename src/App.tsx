@@ -1,14 +1,13 @@
 import { useStore } from "@tanstack/react-form";
 import { ItemsBreakdownSection } from "@/components/items-breakdown-section";
 import { ItemsSection } from "@/components/items-section";
-import { ParticipantsSection } from "@/components/participants-section";
+import { ParticipantsForm } from "@/components/participants-form";
 import { SummaryTabContent } from "@/components/summary-tab-content";
 import { FieldSeparator } from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppForm } from "@/lib/form";
 import {
 	createEmptyItem,
-	createEmptyParticipant,
 	type Item,
 	type Participant,
 	type Schema,
@@ -37,32 +36,6 @@ function App() {
 		form.store,
 		(state) => state.values.participants,
 	);
-
-	function handleAddParticipant(name: Participant["name"]) {
-		form.pushFieldValue(
-			"participants",
-			createEmptyParticipant({
-				name,
-			}),
-		);
-	}
-
-	function handleRemoveParticipant(index: number) {
-		form.removeFieldValue("participants", index);
-	}
-
-	function handleUpdateParticipant(index: number, name: Participant["name"]) {
-		const participant = participants[index];
-
-		form.replaceFieldValue("participants", index, {
-			...participant,
-			name,
-		});
-	}
-
-	function handleRemoveAllParticipants() {
-		form.setFieldValue("participants", []);
-	}
 
 	function handleFindParticipantName(participantId: Participant["id"]) {
 		return participants.find((participant) => participant.id === participantId)
@@ -99,13 +72,7 @@ function App() {
 						value="details"
 						className="flex flex-col gap-y-[var(--gutter-block)]"
 					>
-						<ParticipantsSection
-							participants={participants}
-							addParticipant={handleAddParticipant}
-							removeParticipant={handleRemoveParticipant}
-							updateParticipant={handleUpdateParticipant}
-							removeAllParticipants={handleRemoveAllParticipants}
-						/>
+						<ParticipantsForm form={form} />
 						<FieldSeparator />
 						<ItemsSection participants={participants} addItem={handleAddItem} />
 						{items.length > 0 ? (
