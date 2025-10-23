@@ -43,11 +43,16 @@ export const itemSchema = z
 	.refine(
 		(item) =>
 			item.type === "evenly"
-				? item.distributions.every((distribution) => distribution.amount === 0)
+				? item.amount ===
+					item.distributions.reduce(
+						(acc, distribution) => acc + distribution.amount,
+						0,
+					)
 				: true,
 		{
 			error:
-				"Distribution amounts must be 0 when distribution type is `evenly`",
+				"`Distributions` amounts must sum to the `Item` amount when `Item` type is `evenly`",
+			path: ["distributions"],
 		},
 	)
 	.refine(
@@ -60,7 +65,8 @@ export const itemSchema = z
 				: true,
 		{
 			error:
-				"Distribution percentages must sum to 100 when distribution type is `percentage`",
+				"`Distributions` percentages must sum to 100 when `Item` type is `percentage`",
+			path: ["distributions"],
 		},
 	)
 	.refine(
@@ -73,7 +79,8 @@ export const itemSchema = z
 				: true,
 		{
 			error:
-				"Distribution amounts must sum to the item amount when distribution type is `absolute`",
+				"`Distributions` amounts must sum to the `Item` amount when `Item` type is `absolute`",
+			path: ["distributions"],
 		},
 	);
 
@@ -109,7 +116,7 @@ export const itemSummaryCodec = z.codec(
 						return {
 							participantId: distribution.participantId,
 							percentage: 100 / item.distributions.length,
-							amount: item.amount / item.distributions.length,
+							amount: distribution.amount,
 						};
 
 					if (item.type === "percentage")

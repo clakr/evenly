@@ -1,14 +1,13 @@
 import { useStore } from "@tanstack/react-form";
-import { ItemsBreakdownSection } from "@/components/items-breakdown-section";
-import { ItemsSection } from "@/components/items-section";
+import { ItemsBreakdownForm } from "@/components/items-breakdown-form";
+import { ItemsForm } from "@/components/items-form";
 import { ParticipantsForm } from "@/components/participants-form";
 import { SummaryTabContent } from "@/components/summary-tab-content";
 import { FieldSeparator } from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppForm } from "@/lib/form";
 import {
-	createEmptyItem,
-	type Item,
+	itemSummaryCodec,
 	type Participant,
 	type Schema,
 	schema,
@@ -46,10 +45,7 @@ function App() {
 	 * items
 	 */
 	const items = useStore(form.store, (state) => state.values.items);
-
-	function handleAddItem(payload: Partial<Item>) {
-		form.pushFieldValue("items", createEmptyItem(payload));
-	}
+	const itemsBreakdown = itemSummaryCodec.decode(items);
 
 	return (
 		<main className="max-w-3xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.6)]">
@@ -74,8 +70,21 @@ function App() {
 					>
 						<ParticipantsForm form={form} />
 						<FieldSeparator />
-						<ItemsSection participants={participants} addItem={handleAddItem} />
-						{items.length > 0 ? (
+						<ItemsForm form={form} />
+						<FieldSeparator />
+						<ItemsBreakdownForm form={form} />
+
+						{/* <div className="text-xs">
+							{items.map((item) => (
+								<pre key={item.id}>{JSON.stringify(item, null, 2)}</pre>
+							))}
+						</div>
+						<div className="text-xs">
+							{itemsBreakdown.map((item) => (
+								<pre key={item.id}>{JSON.stringify(item, null, 2)}</pre>
+							))}
+						</div> */}
+						{/* {items.length > 0 ? (
 							<>
 								<FieldSeparator />
 								<ItemsBreakdownSection
@@ -83,7 +92,7 @@ function App() {
 									findParticipantName={handleFindParticipantName}
 								/>
 							</>
-						) : null}
+						) : null} */}
 					</TabsContent>
 					<SummaryTabContent
 						items={items}
