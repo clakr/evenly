@@ -156,7 +156,7 @@ export const ItemsForm = withForm({
 					</Empty>
 				) : (
 					<FieldSet className="border border-dashed p-4 rounded-lg">
-						<FieldGroup className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+						<FieldGroup className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
 							<Field data-invalid={error?.fieldErrors.amount ? true : false}>
 								<FieldLabel htmlFor="amount">Amount</FieldLabel>
 								<Input
@@ -175,7 +175,9 @@ export const ItemsForm = withForm({
 									}
 									ref={inputRef}
 								/>
-								<FieldDescription>insert description here</FieldDescription>
+								<FieldDescription>
+									Enter the total amount for this item
+								</FieldDescription>
 								<FieldError
 									id="amount-error"
 									errors={error?.fieldErrors.amount?.map((error) => ({
@@ -197,7 +199,9 @@ export const ItemsForm = withForm({
 									}
 									onKeyDown={handleKeyDown}
 								/>
-								<FieldDescription>insert description here</FieldDescription>
+								<FieldDescription>
+									Give this item a descriptive name
+								</FieldDescription>
 								<FieldError
 									id="name-error"
 									errors={error?.fieldErrors.name?.map((error) => ({
@@ -205,6 +209,7 @@ export const ItemsForm = withForm({
 									}))}
 								/>
 							</Field>
+							<FieldSeparator className="col-span-full" />
 							<Field
 								data-invalid={error?.fieldErrors.paidBy ? true : false}
 								className="col-span-full"
@@ -231,7 +236,9 @@ export const ItemsForm = withForm({
 										))}
 									</SelectContent>
 								</Select>
-								<FieldDescription>insert description here</FieldDescription>
+								<FieldDescription>
+									Select who paid for this item
+								</FieldDescription>
 								<FieldError
 									id="paidBy-error"
 									errors={error?.fieldErrors.paidBy?.map((error) => ({
@@ -244,7 +251,9 @@ export const ItemsForm = withForm({
 								className="col-span-full"
 							>
 								<FieldLabel>Type</FieldLabel>
-								<FieldDescription>insert description here</FieldDescription>
+								<FieldDescription>
+									Choose how to distribute this item among participants
+								</FieldDescription>
 								<RadioGroup
 									value={item.type}
 									onValueChange={(value: ItemType) =>
@@ -275,8 +284,11 @@ export const ItemsForm = withForm({
 								/>
 							</FieldSet>
 							<FieldSeparator className="col-span-full" />
-							<FieldSet className="col-span-full">
+							<FieldSet className="col-span-full gap-3">
 								<FieldLabel>Distribution</FieldLabel>
+								<FieldDescription>
+									Set how much each participant should pay for this item
+								</FieldDescription>
 								<FieldGroup className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
 									{item.distributions.map((distribution, index) => (
 										<Field
