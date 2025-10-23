@@ -2,11 +2,11 @@ import { useStore } from "@tanstack/react-form";
 import { ItemsBreakdownForm } from "@/components/items-breakdown-form";
 import { ItemsForm } from "@/components/items-form";
 import { ParticipantsForm } from "@/components/participants-form";
-import { SummaryTabContent } from "@/components/summary-tab-content";
+import { SummaryForm } from "@/components/summary-form";
 import { FieldSeparator } from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppForm } from "@/lib/form";
-import { type Participant, type Schema, schema } from "@/lib/schemas";
+import { type Schema, schema } from "@/lib/schemas";
 
 function App() {
 	const form = useAppForm({
@@ -22,23 +22,6 @@ function App() {
 		},
 	});
 
-	/**
-	 * participants
-	 */
-
-	const participants = useStore(
-		form.store,
-		(state) => state.values.participants,
-	);
-
-	function handleFindParticipantName(participantId: Participant["id"]) {
-		return participants.find((participant) => participant.id === participantId)
-			?.name;
-	}
-
-	/**
-	 * items
-	 */
 	const items = useStore(form.store, (state) => state.values.items);
 
 	return (
@@ -68,10 +51,12 @@ function App() {
 						<FieldSeparator />
 						<ItemsBreakdownForm form={form} />
 					</TabsContent>
-					<SummaryTabContent
-						items={items}
-						findParticipantName={handleFindParticipantName}
-					/>
+					<TabsContent
+						value="summary"
+						className="grid gap-y-[var(--gutter-block)] font-mono"
+					>
+						<SummaryForm form={form} />
+					</TabsContent>
 				</Tabs>
 			</form>
 		</main>
