@@ -6,12 +6,7 @@ import { SummaryTabContent } from "@/components/summary-tab-content";
 import { FieldSeparator } from "@/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppForm } from "@/lib/form";
-import {
-	itemSummaryCodec,
-	type Participant,
-	type Schema,
-	schema,
-} from "@/lib/schemas";
+import { type Participant, type Schema, schema } from "@/lib/schemas";
 
 function App() {
 	const form = useAppForm({
@@ -45,7 +40,6 @@ function App() {
 	 * items
 	 */
 	const items = useStore(form.store, (state) => state.values.items);
-	const itemsBreakdown = itemSummaryCodec.decode(items);
 
 	return (
 		<main className="max-w-3xl mx-auto p-6 flex flex-col gap-y-[var(--gutter-block)] [--gutter-block:theme(spacing.6)]">
@@ -73,26 +67,6 @@ function App() {
 						<ItemsForm form={form} />
 						<FieldSeparator />
 						<ItemsBreakdownForm form={form} />
-
-						{/* <div className="text-xs">
-							{items.map((item) => (
-								<pre key={item.id}>{JSON.stringify(item, null, 2)}</pre>
-							))}
-						</div>
-						<div className="text-xs">
-							{itemsBreakdown.map((item) => (
-								<pre key={item.id}>{JSON.stringify(item, null, 2)}</pre>
-							))}
-						</div> */}
-						{/* {items.length > 0 ? (
-							<>
-								<FieldSeparator />
-								<ItemsBreakdownSection
-									items={items}
-									findParticipantName={handleFindParticipantName}
-								/>
-							</>
-						) : null} */}
 					</TabsContent>
 					<SummaryTabContent
 						items={items}
