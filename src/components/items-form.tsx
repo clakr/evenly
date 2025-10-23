@@ -2,6 +2,8 @@ import { useStore } from "@tanstack/react-form";
 import { Banknote, Percent, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import * as z from "zod";
+import { AddDistributionPopover } from "@/components/add-distribution-popover";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	Empty,
 	EmptyDescription,
@@ -58,12 +60,6 @@ export const ItemsForm = withForm({
 		const [item, setItem] = useState<Item>(createEmptyItem());
 		const [error, setError] = useState<z.ZodFlattenedError<Item> | null>(null);
 
-		function handleFindParticipantName(participantId: Participant["id"]) {
-			return participants.find(
-				(participant) => participant.id === participantId,
-			)?.name;
-		}
-
 		function handleDistributionAmountChange({
 			participantId,
 			amount,
@@ -93,6 +89,7 @@ export const ItemsForm = withForm({
 				createEmptyItem({
 					distributions: participants.map((participant) => ({
 						participantId: participant.id,
+						participantName: participant.name,
 						amount: 0,
 					})),
 				}),
@@ -111,6 +108,7 @@ export const ItemsForm = withForm({
 				...prev,
 				distributions: participants.map((participant) => ({
 					participantId: participant.id,
+					participantName: participant.name,
 					amount: 0,
 				})),
 			}));
@@ -138,6 +136,43 @@ export const ItemsForm = withForm({
 				})),
 			}));
 		}, [item.type, item.amount]);
+
+		function isNameUnique(name: Participant["name"], index?: number) {
+			return index !== undefined
+				? !participants.slice(0, index).some((p) => p.name === name)
+				: !participants.some((p) => p.name === name);
+		}
+
+		function handleAddDistribution(name: Participant["name"]) {
+			setItem((prev) => {
+				if (prev.type === "evenly") {
+					const distributions = prev.distributions.map((distribution) => ({
+						...distribution,
+						amount: item.amount / (prev.distributions.length + 1),
+					}));
+
+					return {
+						...prev,
+						distributions: [
+							...distributions,
+							{
+								participantId: crypto.randomUUID(),
+								participantName: name,
+								amount: item.amount / (prev.distributions.length + 1),
+							},
+						],
+					};
+				}
+
+				return {
+					...prev,
+					distributions: prev.distributions.map((distribution) => ({
+						...distribution,
+						amount: 0,
+					})),
+				};
+			});
+		}
 
 		return (
 			<section className="grid gap-y-[calc(var(--gutter-block)/2)]">
@@ -215,27 +250,37 @@ export const ItemsForm = withForm({
 								className="col-span-full"
 							>
 								<FieldLabel htmlFor="paidBy">Paid By</FieldLabel>
-								<Select
-									value={item.paidBy}
-									onValueChange={(value) => setItem({ ...item, paidBy: value })}
-								>
-									<SelectTrigger
-										id="paidBy"
-										aria-invalid={error?.fieldErrors.paidBy ? true : false}
-										aria-describedby={
-											error?.fieldErrors.paidBy ? "paidBy-error" : undefined
+								<ButtonGroup>
+									<Select
+										value={item.paidBy}
+										onValueChange={(value) =>
+											setItem({ ...item, paidBy: value })
 										}
 									>
-										<SelectValue placeholder="Select a participant" />
-									</SelectTrigger>
-									<SelectContent>
-										{participants.map((participant) => (
-											<SelectItem key={participant.id} value={participant.id}>
-												{participant.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+										<SelectTrigger
+											id="paidBy"
+											aria-invalid={error?.fieldErrors.paidBy ? true : false}
+											aria-describedby={
+												error?.fieldErrors.paidBy ? "paidBy-error" : undefined
+											}
+											className="grow"
+										>
+											<SelectValue placeholder="Select a participant" />
+										</SelectTrigger>
+										<SelectContent>
+											{participants.map((participant) => (
+												<SelectItem key={participant.id} value={participant.id}>
+													{participant.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<AddDistributionPopover
+										isNameUnique={(name) => isNameUnique(name)}
+										addDistribution={(name) => handleAddDistribution(name)}
+									/>
+								</ButtonGroup>
+
 								<FieldDescription>
 									Select who paid for this item
 								</FieldDescription>
@@ -298,7 +343,7 @@ export const ItemsForm = withForm({
 											}
 										>
 											<FieldLabel htmlFor={distribution.participantId}>
-												{handleFindParticipantName(distribution.participantId)}
+												{distribution.participantName}
 											</FieldLabel>
 											<InputGroup>
 												{item.type !== "percentage" ? (
@@ -314,6 +359,7 @@ export const ItemsForm = withForm({
 													onChange={(event) =>
 														handleDistributionAmountChange({
 															participantId: distribution.participantId,
+															participantName: distribution.participantName,
 															amount: event.target.valueAsNumber,
 														})
 													}

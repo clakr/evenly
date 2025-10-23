@@ -82,9 +82,7 @@ export const ItemsBreakdownForm = withForm({
 											key={distribution.participantId}
 											className="flex justify-between items-center"
 										>
-											<span>
-												{findParticipantName(distribution.participantId)}
-											</span>
+											<span>{distribution.participantName}</span>
 											<span>
 												{buildDistributionAmount({ item, distribution })}
 											</span>

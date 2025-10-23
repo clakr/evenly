@@ -19,6 +19,7 @@ export type Participant = z.infer<typeof participantSchema>;
 
 export const distributionSchema = z.object({
 	participantId: participantSchema.shape.id,
+	participantName: participantSchema.shape.name,
 	amount: z.number().min(0, "Amount must be equal to or greater than 0"),
 });
 
@@ -88,6 +89,7 @@ export type Item = z.infer<typeof itemSchema>;
 
 export const itemsBreakdownDistributionSchema = z.object({
 	participantId: distributionSchema.shape.participantId,
+	participantName: distributionSchema.shape.participantName,
 	percentage: z.number(),
 	amount: distributionSchema.shape.amount,
 });
@@ -115,6 +117,7 @@ export const itemSummaryCodec = z.codec(
 					if (item.type === "evenly")
 						return {
 							participantId: distribution.participantId,
+							participantName: distribution.participantName,
 							percentage: 100 / item.distributions.length,
 							amount: distribution.amount,
 						};
@@ -122,12 +125,14 @@ export const itemSummaryCodec = z.codec(
 					if (item.type === "percentage")
 						return {
 							participantId: distribution.participantId,
+							participantName: distribution.participantName,
 							percentage: distribution.amount,
 							amount: (item.amount * distribution.amount) / 100,
 						};
 
 					return {
 						participantId: distribution.participantId,
+						participantName: distribution.participantName,
 						percentage: 0,
 						amount: distribution.amount,
 					};
@@ -153,6 +158,7 @@ export const itemSummaryCodec = z.codec(
 
 					return {
 						participantId: distribution.participantId,
+						participantName: distribution.participantName,
 						amount,
 					};
 				});

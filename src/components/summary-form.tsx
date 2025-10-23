@@ -51,10 +51,7 @@ function createEmptyParticipantItems(
 export const SummaryForm = withForm({
 	...formOpts,
 	render: function Render({ form }) {
-		const { items, participants } = useStore(
-			form.store,
-			(state) => state.values,
-		);
+		const { items } = useStore(form.store, (state) => state.values);
 
 		const itemsBreakdown = itemSummaryCodec.decode(items);
 
@@ -67,9 +64,7 @@ export const SummaryForm = withForm({
 
 					const payload = createEmptyParticipantItems({
 						id: distribution.participantId,
-						name: participants.find(
-							(participant) => participant.id === distribution.participantId,
-						)?.name,
+						name: distribution.participantName,
 						...participant,
 					});
 
@@ -84,7 +79,7 @@ export const SummaryForm = withForm({
 			});
 
 			return Array.from(map.values());
-		}, [itemsBreakdown, participants]);
+		}, [itemsBreakdown]);
 
 		const paymentOverview = useMemo(
 			() =>
@@ -158,6 +153,8 @@ export const SummaryForm = withForm({
 
 		return (
 			<>
+				{/* <pre>{JSON.stringify(items, null, 2)}</pre>
+				<pre>{JSON.stringify(itemsBreakdown, null, 2)}</pre> */}
 				<section className="flex flex-wrap gap-2">
 					<h2 className="font-medium text-sm basis-full uppercase">
 						Participants
@@ -243,7 +240,7 @@ export const SummaryForm = withForm({
 					<h2 className="font-medium text-sm uppercase">Settlements</h2>
 					<ItemGroup>
 						{settlements.map((settlement) => (
-							<Item key={`${settlement.from}-${settlement.to}`}>
+							<Item key={`${settlement.from}-${settlement.to}`} size="sm">
 								<ItemHeader className="items-center">
 									<span className="flex items-center gap-x-2">
 										{settlement.from}
