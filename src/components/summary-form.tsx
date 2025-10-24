@@ -86,7 +86,7 @@ export const SummaryForm = withForm({
 				participantItemsBreakdown.map<PaymentOverview>((participant) => {
 					const paid = itemsBreakdown.reduce(
 						(acc, item) =>
-							acc + (item.paidBy === participant.id ? item.amount : 0),
+							acc + (item.paidBy.id === participant.id ? item.amount : 0),
 						0,
 					);
 
@@ -153,8 +153,6 @@ export const SummaryForm = withForm({
 
 		return (
 			<>
-				{/* <pre>{JSON.stringify(items, null, 2)}</pre>
-				<pre>{JSON.stringify(itemsBreakdown, null, 2)}</pre> */}
 				<section className="flex flex-wrap gap-2">
 					<h2 className="font-medium text-sm basis-full uppercase">
 						Participants

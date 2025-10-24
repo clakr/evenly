@@ -37,7 +37,7 @@ export const itemSchema = z
 		id: z.uuid(),
 		name: z.string().min(1, "Name is required"),
 		amount: z.number().min(1, "Amount is required"),
-		paidBy: participantSchema.shape.id,
+		paidBy: participantSchema,
 		type: itemTypeSchema,
 		distributions: z.array(distributionSchema),
 	})
@@ -204,7 +204,10 @@ export function createEmptyItem(payload: Partial<Item> = {}): Item {
 		id: crypto.randomUUID(),
 		name: "",
 		amount: 0,
-		paidBy: "",
+		paidBy: {
+			id: "",
+			name: "",
+		},
 		type: "evenly",
 		distributions: [],
 		...payload,

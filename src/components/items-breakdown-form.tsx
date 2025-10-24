@@ -12,17 +12,13 @@ import {
 	type ItemsBreakdownDistribution,
 	type Item as ItemType,
 	itemSummaryCodec,
-	type Participant,
 } from "@/lib/schemas";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 
 export const ItemsBreakdownForm = withForm({
 	...formOpts,
 	render: function Render({ form }) {
-		const { items, participants } = useStore(
-			form.store,
-			(state) => state.values,
-		);
+		const { items } = useStore(form.store, (state) => state.values);
 
 		const itemsBreakdown = itemSummaryCodec.decode(items);
 
@@ -31,12 +27,6 @@ export const ItemsBreakdownForm = withForm({
 			else if (type === "percentage") return <Percent />;
 
 			return <Banknote />;
-		}
-
-		function findParticipantName(participantId: Participant["id"]) {
-			return participants.find(
-				(participant) => participant.id === participantId,
-			)?.name;
 		}
 
 		function buildDistributionAmount({
@@ -92,10 +82,7 @@ export const ItemsBreakdownForm = withForm({
 							</ItemContent>
 							<ItemFooter>
 								<span>
-									Paid by:{" "}
-									<b className="font-semibold">
-										{findParticipantName(item.paidBy)}
-									</b>
+									Paid by: <b className="font-semibold">{item.paidBy.name}</b>
 								</span>
 								<span>{getItemTypeIcon(item.type)}</span>
 							</ItemFooter>

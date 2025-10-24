@@ -51,6 +51,7 @@ export function AddDistributionPopover({
 
 		addDistribution(parsedName);
 
+		setName("");
 		setIsOpen(false);
 	}
 

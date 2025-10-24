@@ -174,6 +174,11 @@ export const ItemsForm = withForm({
 			});
 		}
 
+		const participantOptions = item.distributions.map((distribution) => ({
+			label: distribution.participantName,
+			value: distribution.participantId,
+		}));
+
 		return (
 			<section className="grid gap-y-[calc(var(--gutter-block)/2)]">
 				<h2 className="font-medium">Items</h2>
@@ -251,10 +256,23 @@ export const ItemsForm = withForm({
 							>
 								<FieldLabel htmlFor="paidBy">Paid By</FieldLabel>
 								<ButtonGroup>
+									<AddDistributionPopover
+										isNameUnique={(name) => isNameUnique(name)}
+										addDistribution={(name) => handleAddDistribution(name)}
+									/>
 									<Select
-										value={item.paidBy}
+										value={item.paidBy.id}
 										onValueChange={(value) =>
-											setItem({ ...item, paidBy: value })
+											setItem({
+												...item,
+												paidBy: {
+													id: value,
+													name:
+														participantOptions.find(
+															(participant) => participant.value === value,
+														)?.label || "",
+												},
+											})
 										}
 									>
 										<SelectTrigger
@@ -268,19 +286,17 @@ export const ItemsForm = withForm({
 											<SelectValue placeholder="Select a participant" />
 										</SelectTrigger>
 										<SelectContent>
-											{participants.map((participant) => (
-												<SelectItem key={participant.id} value={participant.id}>
-													{participant.name}
+											{participantOptions.map((participant) => (
+												<SelectItem
+													key={participant.value}
+													value={participant.value}
+												>
+													{participant.label}
 												</SelectItem>
 											))}
 										</SelectContent>
 									</Select>
-									<AddDistributionPopover
-										isNameUnique={(name) => isNameUnique(name)}
-										addDistribution={(name) => handleAddDistribution(name)}
-									/>
 								</ButtonGroup>
-
 								<FieldDescription>
 									Select who paid for this item
 								</FieldDescription>
