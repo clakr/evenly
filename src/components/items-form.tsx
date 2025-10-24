@@ -1,8 +1,9 @@
 import { useStore } from "@tanstack/react-form";
-import { Banknote, Percent, User } from "lucide-react";
+import { Banknote, Percent, Plus, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import * as z from "zod";
 import { AddDistributionPopover } from "@/components/add-distribution-popover";
+import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	Empty,
@@ -407,6 +408,14 @@ export const ItemsForm = withForm({
 									))}
 								</FieldGroup>
 							</FieldSet>
+							<Button
+								variant="secondary"
+								className="col-span-full"
+								onClick={handleAdd}
+							>
+								<Plus />
+								Add Item
+							</Button>
 						</FieldGroup>
 					</FieldSet>
 				)}
