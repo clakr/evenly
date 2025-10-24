@@ -48,8 +48,12 @@ function App() {
 						<ParticipantsForm form={form} />
 						<FieldSeparator />
 						<ItemsForm form={form} />
-						<FieldSeparator />
-						<ItemsBreakdownForm form={form} />
+						{items.length > 0 ? (
+							<>
+								<FieldSeparator />
+								<ItemsBreakdownForm form={form} />
+							</>
+						) : null}
 					</TabsContent>
 					<TabsContent
 						value="summary"
