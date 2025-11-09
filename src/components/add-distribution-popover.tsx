@@ -67,8 +67,8 @@ export function AddDistributionPopover({
 			<PopoverTrigger asChild>
 				<Button
 					size="icon"
-					aria-label="Add Participant"
-					title="Add Participant"
+					aria-label="Add a participant for this item only"
+					title="Add a participant for this item only"
 					variant="outline"
 				>
 					<Plus />

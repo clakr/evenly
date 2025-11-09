@@ -1,6 +1,6 @@
 import { useStore } from "@tanstack/react-form";
 import { Banknote, Percent, Plus, User } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as z from "zod";
 import { AddDistributionPopover } from "@/components/add-distribution-popover";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { formOpts, withForm } from "@/lib/form";
 import {
 	createEmptyItem,
@@ -45,6 +46,7 @@ import {
 	itemTypeSchema,
 	type Participant,
 } from "@/lib/schemas";
+import type { Option } from "@/lib/types";
 
 export const ItemsForm = withForm({
 	...formOpts,
@@ -53,6 +55,7 @@ export const ItemsForm = withForm({
 			form.store,
 			(state) => state.values.participants,
 		);
+		const items = useStore(form.store, (state) => state.values.items);
 
 		const isParticipantsEmpty = participants.length === 0;
 
@@ -60,6 +63,11 @@ export const ItemsForm = withForm({
 
 		const [item, setItem] = useState<Item>(createEmptyItem());
 		const [error, setError] = useState<z.ZodFlattenedError<Item> | null>(null);
+
+		const [
+			isIncludeOverriddenParticipants,
+			setIsIncludeOverriddenParticipants,
+		] = useState(false);
 
 		function handleDistributionAmountChange({
 			participantId,
@@ -74,8 +82,6 @@ export const ItemsForm = withForm({
 		}
 
 		function handleAdd() {
-			setError(null);
-
 			const { success, error, data } = itemSchema.safeParse(item);
 			if (!success) {
 				setError(z.flattenError(error));
@@ -95,6 +101,8 @@ export const ItemsForm = withForm({
 					})),
 				}),
 			);
+
+			setError(null);
 		}
 
 		function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -138,10 +146,27 @@ export const ItemsForm = withForm({
 			}));
 		}, [item.type, item.amount]);
 
+		const overriddenParticipants = items
+			.flatMap((item) => item.distributions)
+			.filter(
+				(participant) =>
+					!participants.some((p) => p.id === participant.participantId),
+			);
+
 		function isNameUnique(name: Participant["name"], index?: number) {
-			return index !== undefined
-				? !participants.slice(0, index).some((p) => p.name === name)
-				: !participants.some((p) => p.name === name);
+			const isParticipantNameUnique =
+				index !== undefined
+					? !participants.slice(0, index).some((p) => p.name === name)
+					: !participants.some((p) => p.name === name);
+
+			const isOverriddenParticipantNameUnique =
+				index !== undefined
+					? !overriddenParticipants
+							.slice(0, index)
+							.some((p) => p.participantName === name)
+					: !overriddenParticipants.some((p) => p.participantName === name);
+
+			return isParticipantNameUnique && isOverriddenParticipantNameUnique;
 		}
 
 		function handleAddDistribution(name: Participant["name"]) {
@@ -175,10 +200,59 @@ export const ItemsForm = withForm({
 			});
 		}
 
-		const participantOptions = item.distributions.map((distribution) => ({
-			label: distribution.participantName,
-			value: distribution.participantId,
-		}));
+		const participantOptions = useMemo(() => {
+			const optionsMap = new Map<Participant["id"], Option>();
+
+			item.distributions.forEach((distribution) => {
+				optionsMap.set(distribution.participantId, {
+					label: distribution.participantName,
+					value: distribution.participantId,
+				});
+			});
+
+			if (isIncludeOverriddenParticipants) {
+				overriddenParticipants.forEach((participant) => {
+					optionsMap.set(participant.participantId, {
+						label: participant.participantName,
+						value: participant.participantId,
+					});
+				});
+			}
+
+			return Array.from(optionsMap.values());
+		}, [
+			item.distributions,
+			isIncludeOverriddenParticipants,
+			overriddenParticipants,
+		]);
+
+		function handleOnCheckChange(value: boolean) {
+			setIsIncludeOverriddenParticipants(value);
+
+			if (value) {
+				setItem((prev) => ({
+					...prev,
+					distributions: [
+						...prev.distributions,
+						...overriddenParticipants.map((p) => ({
+							participantId: p.participantId,
+							participantName: p.participantName,
+							amount: 0,
+						})),
+					],
+				}));
+			} else {
+				setItem((prev) => ({
+					...prev,
+					distributions: prev.distributions.filter(
+						(d) =>
+							!overriddenParticipants.some(
+								(p) => p.participantId === d.participantId,
+							),
+					),
+				}));
+			}
+		}
 
 		return (
 			<section className="grid gap-y-[calc(var(--gutter-block)/2)]">
@@ -255,7 +329,22 @@ export const ItemsForm = withForm({
 								data-invalid={error?.fieldErrors.paidBy ? true : false}
 								className="col-span-full"
 							>
-								<FieldLabel htmlFor="paidBy">Paid By</FieldLabel>
+								<div className="flex justify-between items-center gap-x-2">
+									<FieldLabel htmlFor="paidBy">Paid By</FieldLabel>
+									{overriddenParticipants.length > 0 ? (
+										<Field orientation="horizontal" className="w-fit">
+											<FieldLabel htmlFor="include-overridden-participants">
+												Include Overridden Participants
+											</FieldLabel>
+											<Switch
+												id="include-overridden-participants"
+												checked={isIncludeOverriddenParticipants}
+												onCheckedChange={handleOnCheckChange}
+											/>
+										</Field>
+									) : null}
+								</div>
+
 								<ButtonGroup>
 									<AddDistributionPopover
 										isNameUnique={(name) => isNameUnique(name)}
