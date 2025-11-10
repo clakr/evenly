@@ -1,5 +1,7 @@
 import { useStore } from "@tanstack/react-form";
-import { Banknote, Equal, Percent } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	Item,
 	ItemContent,
@@ -13,6 +15,7 @@ import {
 	type Item as ItemType,
 	itemSummaryCodec,
 } from "@/lib/schemas";
+import { useAlert } from "@/lib/use-alert";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 
 export const ItemsBreakdownForm = withForm({
@@ -21,13 +24,6 @@ export const ItemsBreakdownForm = withForm({
 		const { items } = useStore(form.store, (state) => state.values);
 
 		const itemsBreakdown = itemSummaryCodec.decode(items);
-
-		function getItemTypeIcon(type: ItemType["type"]) {
-			if (type === "evenly") return <Equal />;
-			else if (type === "percentage") return <Percent />;
-
-			return <Banknote />;
-		}
 
 		function buildDistributionAmount({
 			item,
@@ -55,11 +51,24 @@ export const ItemsBreakdownForm = withForm({
 			return amount.join(" ");
 		}
 
+		const { show } = useAlert();
+
+		function handleDeleteItem(index: number) {
+			show({
+				title: "Delete Item",
+				description: `Are you sure you want to delete "${items[index].name}"?`,
+				actionText: "Delete",
+				onAction: () => {
+					form.removeFieldValue("items", index);
+				},
+			});
+		}
+
 		return (
 			<section className="grid gap-y-[calc(var(--gutter-block)/2)]">
 				<h2 className="font-medium">Items Breakdown</h2>
 				<ItemGroup className="font-mono gap-y-[calc(var(--gutter-block)/2)]">
-					{itemsBreakdown.map((item) => (
+					{itemsBreakdown.map((item, index) => (
 						<Item key={item.id} variant="muted">
 							<ItemHeader className="font-bold">
 								<span>{item.name}</span>
@@ -84,7 +93,32 @@ export const ItemsBreakdownForm = withForm({
 								<span>
 									Paid by: <b className="font-semibold">{item.paidBy.name}</b>
 								</span>
-								<span>{getItemTypeIcon(item.type)}</span>
+								<ButtonGroup>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										title="Edit Item"
+										aria-label="Edit Item"
+										className="text-muted-foreground"
+										disabled
+									>
+										<Edit />
+										<span className="sr-only">Edit Item</span>
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										title="Delete Item"
+										aria-label="Delete Item"
+										className="text-muted-foreground"
+										onClick={() => handleDeleteItem(index)}
+									>
+										<Trash />
+										<span className="sr-only">Delete Item</span>
+									</Button>
+								</ButtonGroup>
 							</ItemFooter>
 						</Item>
 					))}
