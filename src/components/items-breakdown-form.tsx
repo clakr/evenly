@@ -57,7 +57,8 @@ export const ItemsBreakdownForm = withForm({
 			show({
 				title: "Delete Item",
 				description: `Are you sure you want to delete "${items[index].name}"?`,
-				actionText: "Delete",
+				actionText: "Yes, Delete",
+				cancelText: "No, Cancel",
 				onAction: () => {
 					form.removeFieldValue("items", index);
 				},
